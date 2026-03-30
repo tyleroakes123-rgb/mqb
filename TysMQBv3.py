@@ -3,18 +3,17 @@ import hmac
 import hashlib
 import re
 
-MASTER_KEY = bytes.fromhex('88A2FA7A1F067891C31AD1CD7BA20653')
+HMAC_KEY = bytes.fromhex('88A2FA7A1F067891C31AD1CD7BA20653')
+AES_KEY = b'VAG IMMO KEY 123'
 
 def extract_all(input_text):
-    hexstr = re.sub('[^0-9A-Fa-f]', '', input_text)
     found = []
-
     for match in re.finditer('([0-9A-F]{32})', input_text, re.IGNORECASE):
         found.append(bytes.fromhex(match.group(1)))
 
+    hexstr = re.sub('[^0-9A-Fa-f]', '', input_text)
     if len(hexstr) == 64:
-        print("\n✅ Detected 27 01 Seed")
-        aes = AES.new(MASTER_KEY, AES.MODE_ECB)
+        aes = AES.new(AES_KEY, AES.MODE_ECB)
         seed = bytes.fromhex(hexstr)
         found.append(aes.encrypt(seed[0:16]) + aes.encrypt(seed[16:32]))
 
@@ -27,11 +26,13 @@ def extract_all(input_text):
     if len(found) == 0:
         raise Exception("Could not find CS, Seed or K02 trace")
     
+    found = list(reversed(list(dict.fromkeys(found))))
+
     if len(found) > 1:
         print(f"\n⚠️  Found {len(found)} different CS values")
         print("✅ Cluster is always master, always use the first one listed")
 
-    return list(dict.fromkeys(found))
+    return found
 
 
 def generate_all(cs):
@@ -43,7 +44,7 @@ def generate_all(cs):
     pin = pin % 10000
     print(f"\n📍 PIN Code: {pin:04d}")
 
-    syncfile = hmac.new(MASTER_KEY, b'\x00\x00\x00\x00' + cs, hashlib.sha256).digest()
+    syncfile = hmac.new(HMAC_KEY, b'\x00\x00\x00\x00' + cs, hashlib.sha256).digest()
     print(f"\n📄 Full Syncfile: {syncfile.hex().upper()}")
 
     print("\n\nSync Codes:")
@@ -52,7 +53,7 @@ def generate_all(cs):
     print("----------------------------------------")
     for counter in range(0, 11):
         buffer = counter.to_bytes(4, byteorder='little') + cs
-        mac = hmac.new(MASTER_KEY, buffer, hashlib.sha256).digest()
+        mac = hmac.new(HMAC_KEY, buffer, hashlib.sha256).digest()
         sync_code = mac[0:16].hex(' ').upper()
         if counter == 1:
             prefix = "👉 "
