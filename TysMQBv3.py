@@ -3,7 +3,7 @@ import hmac
 import hashlib
 import re
 
-MASTER_KEY = b'VAG IMMO KEY 123'
+MASTER_KEY = bytes.fromhex('88A2FA7A1F067891C31AD1CD7BA20653')
 
 def extract_all(input_text):
     hexstr = re.sub('[^0-9A-Fa-f]', '', input_text)
