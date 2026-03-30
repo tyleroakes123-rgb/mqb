@@ -43,7 +43,7 @@ def generate_all(cs):
     pin = pin % 10000
     print(f"\n📍 PIN Code: {pin:04d}")
 
-    syncfile = hmac.new(MASTER_KEY, cs, hashlib.sha256).digest()
+    syncfile = hmac.new(MASTER_KEY, b'\x00\x00\x00\x00' + cs, hashlib.sha256).digest()
     print(f"\n📄 Full Syncfile: {syncfile.hex().upper()}")
 
     print("\n\nSync Codes:")
