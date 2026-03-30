@@ -51,7 +51,7 @@ def generate_all(cs):
     print(f'{"Counter":<8} {"Sync Code"}')
     print("----------------------------------------")
     for counter in range(0, 11):
-        buffer = cs + counter.to_bytes(4, byteorder='little')
+        buffer = counter.to_bytes(4, byteorder='little') + cs
         mac = hmac.new(MASTER_KEY, buffer, hashlib.sha256).digest()
         sync_code = mac[0:16].hex(' ').upper()
         if counter == 1:
